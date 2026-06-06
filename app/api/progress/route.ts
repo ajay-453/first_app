@@ -1,14 +1,8 @@
-import pg from 'pg';
-const { Client } = pg;
+import { NextResponse } from 'next/server';
+import { getClient } from '@/lib/db';
 
-export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-
-  const client = new Client({
-    connectionString: process.env.DATABASE_URL,
-    ssl: { rejectUnauthorized: false },
-  });
-
+export async function GET() {
+  const client = getClient();
   try {
     await client.connect();
 
@@ -16,7 +10,7 @@ export default async function handler(req, res) {
       'SELECT * FROM version1 ORDER BY phase, parent_id NULLS FIRST, position'
     );
 
-    let logs = [];
+    let logs: Record<string, unknown>[] = [];
     try {
       const { rows } = await client.query(`
         SELECT l.*, v.title AS task_title
@@ -28,10 +22,11 @@ export default async function handler(req, res) {
       logs = rows;
     } catch (_) {}
 
-    res.status(200).json({ tasks, logs });
-  } catch (e) {
-    res.status(500).json({ error: e.message });
+    return NextResponse.json({ tasks, logs });
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : 'DB error';
+    return NextResponse.json({ error: msg }, { status: 500 });
   } finally {
-    await client.end();
+    await client.end().catch(() => {});
   }
 }
