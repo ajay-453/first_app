@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Build Progress — 3P Explorer</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.js"></script>
+<script src="https://unpkg.com/@babel/standalone@7/babel.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a0f1e;color:#f1f5f9;min-height:100vh}
+.app{max-width:1200px;margin:0 auto;padding:28px 24px}
+.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px}
+.header h1{font-size:1.7rem;font-weight:800;background:linear-gradient(135deg,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.header-sub{color:#475569;font-size:13px;margin-top:6px}
+.refresh-btn{padding:9px 20px;background:#1e293b;border:1px solid #334155;color:#94a3b8;border-radius:9px;cursor:pointer;font-size:13px;transition:all .2s}
+.refresh-btn:hover{background:#334155;color:#f1f5f9}
+.overall-bar{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:18px 22px;margin-bottom:20px}
+.overall-bar-top{display:flex;justify-content:space-between;color:#94a3b8;font-size:13px;margin-bottom:10px}
+.bar-track{background:#0a0f1e;border-radius:8px;height:10px;overflow:hidden}
+.bar-fill{height:100%;background:linear-gradient(90deg,#6366f1,#8b5cf6,#10b981);border-radius:8px;transition:width 1.2s ease}
+.stat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:20px}
+.stat-card{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:20px 14px;text-align:center}
+.stat-value{font-size:2.2rem;font-weight:800}
+.stat-label{color:#64748b;font-size:11px;margin-top:6px;text-transform:uppercase;letter-spacing:.05em}
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.card{background:#1e293b;border:1px solid #334155;border-radius:14px;padding:22px;margin-bottom:16px}
+.card-title{font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.1em;margin-bottom:18px}
+.dep-graph{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:6px 0}
+.dep-box{background:#0a0f1e;border-radius:12px;padding:14px 18px;min-width:120px;text-align:center;border-width:2px;border-style:solid}
+.dep-ph{font-size:10px;color:#475569;margin-bottom:3px;letter-spacing:.05em}
+.dep-name{font-size:12px;font-weight:700;color:#e2e8f0;margin-bottom:10px;line-height:1.3}
+.dep-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700}
+.dep-arrow{color:#334155;font-size:24px;line-height:1}
+.phase-row{border:1px solid #334155;border-radius:12px;overflow:hidden;margin-bottom:10px}
+.phase-header{display:flex;align-items:center;gap:14px;padding:16px 18px;cursor:pointer;background:#0f172a;transition:background .15s}
+.phase-header:hover{background:#131e35}
+.phase-num{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0}
+.phase-info{flex:1;min-width:0}
+.phase-name{font-weight:700;color:#f1f5f9;margin-bottom:3px;font-size:14px}
+.phase-desc{color:#475569;font-size:12px;margin-bottom:8px}
+.mini-bar{background:#1e293b;border-radius:4px;height:4px;overflow:hidden}
+.mini-bar-fill{height:100%;border-radius:4px;transition:width .6s}
+.phase-pct{text-align:right;flex-shrink:0;margin-right:6px}
+.phase-pct-num{font-weight:800;color:#f1f5f9;font-size:15px}
+.phase-pct-sub{color:#475569;font-size:11px;margin-top:2px}
+.chevron{color:#334155;font-size:14px;flex-shrink:0}
+.task-list{padding:8px 18px 14px;background:#080d1a}
+.task-item{display:flex;align-items:flex-start;gap:12px;padding:11px 0;border-bottom:1px solid #1a2540}
+.task-item:last-child{border-bottom:none}
+.task-dot{width:9px;height:9px;border-radius:50%;margin-top:4px;flex-shrink:0}
+.task-text{flex:1;min-width:0}
+.task-title{color:#e2e8f0;font-size:13.5px;font-weight:500}
+.task-desc{color:#475569;font-size:12px;margin-top:3px}
+.badge{padding:3px 11px;border-radius:20px;font-size:11px;font-weight:700;flex-shrink:0;white-space:nowrap}
+.logs-wrap{overflow-x:auto}
+.logs-table{width:100%;border-collapse:collapse;font-size:13px}
+.logs-table th{padding:9px 14px;text-align:left;color:#475569;font-weight:700;border-bottom:1px solid #334155;font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+.logs-table td{padding:11px 14px;border-bottom:1px solid #1a2540;vertical-align:top}
+.logs-table tr:last-child td{border-bottom:none}
+.empty-logs{text-align:center;color:#334155;padding:48px;font-size:14px}
+.loading-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;gap:14px}
+.spinner{width:40px;height:40px;border:3px solid #1e293b;border-top-color:#6366f1;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:768px){
+  .stat-grid{grid-template-columns:repeat(3,1fr)}
+  .charts-grid{grid-template-columns:1fr}
+  .dep-graph{gap:4px}
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, Fragment } = React;
+const {
+  PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis,
+  CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  RadialBarChart, RadialBar, AreaChart, Area
+} = Recharts;
+
+const STATUS_COLOR = {
+  completed:  '#10b981',
+  in_progress:'#f59e0b',
+  pending:    '#475569',
+  error:      '#ef4444',
+  info:       '#6366f1',
+  warning:    '#f59e0b',
+};
+const PHASE_HUE = ['#6366f1','#8b5cf6','#06b6d4','#f59e0b','#10b981'];
+
+function phaseStatus(tasks) {
+  if (!tasks.length) return 'pending';
+  if (tasks.every(t => t.status === 'completed')) return 'completed';
+  if (tasks.some(t => t.status === 'in_progress' || t.status === 'completed')) return 'in_progress';
+  return 'pending';
+}
+
+/* ── App ───────────────────────────────────────────────── */
+function App() {
+  const [data, setData]         = useState(null);
+  const [loading, setLoading]   = useState(true);
+  const [err, setErr]           = useState(null);
+  const [expanded, setExpanded] = useState(null);
+  const [ts, setTs]             = useState('');
+
+  const load = () => {
+    setLoading(true);
+    fetch('/api/progress')
+      .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(d  => { setData(d); setLoading(false); setTs(new Date().toLocaleTimeString()); })
+      .catch(e => { setErr(e.message); setLoading(false); });
+  };
+  useEffect(load, []);
+
+  if (loading) return (
+    <div className="loading-screen">
+      <div className="spinner" />
+      <span style={{color:'#475569',fontSize:14}}>Loading progress...</span>
+    </div>
+  );
+  if (err) return (
+    <div className="loading-screen">
+      <span style={{color:'#ef4444',fontSize:14}}>Error: {err}</span>
+      <button className="refresh-btn" onClick={load}>Try again</button>
+    </div>
+  );
+
+  const phases = (data.tasks || []).filter(r => !r.parent_id);
+  const tasks  = (data.tasks || []).filter(r =>  r.parent_id);
+  const logs   = data.logs || [];
+
+  const done   = tasks.filter(t => t.status === 'completed').length;
+  const inProg = tasks.filter(t => t.status === 'in_progress').length;
+  const pend   = tasks.filter(t => t.status === 'pending').length;
+  const errCt  = logs.filter(l => l.level === 'error').length;
+  const pct    = tasks.length ? Math.round((done / tasks.length) * 100) : 0;
+
+  const pieData = [
+    { name:'Completed',   value: done,   color: STATUS_COLOR.completed  },
+    { name:'In Progress', value: inProg, color: STATUS_COLOR.in_progress },
+    { name:'Pending',     value: pend,   color: STATUS_COLOR.pending    },
+  ].filter(d => d.value > 0);
+
+  const barData = phases.map(p => {
+    const pt = tasks.filter(t => t.parent_id === p.id);
+    return {
+      name:         `P${p.phase}`,
+      Completed:    pt.filter(t => t.status === 'completed').length,
+      'In Progress':pt.filter(t => t.status === 'in_progress').length,
+      Pending:      pt.filter(t => t.status === 'pending').length,
+    };
+  });
+
+  const radialData = phases.map((p, i) => {
+    const pt   = tasks.filter(t => t.parent_id === p.id);
+    const done = pt.filter(t => t.status === 'completed').length;
+    return { name:`P${p.phase} · ${p.title.replace(/Phase \d+ — /,'')}`, value: pt.length ? Math.round((done/pt.length)*100) : 0, fill: PHASE_HUE[i] };
+  });
+
+  const tooltip = {
+    contentStyle:{ background:'#1e293b', border:'1px solid #334155', borderRadius:'10px', color:'#f1f5f9', fontSize:13 },
+    cursor:{ fill:'#1a2540' },
+  };
+
+  return (
+    <div className="app">
+
+      {/* Header */}
+      <div className="header">
+        <div>
+          <h1>3P Explorer — Build Progress</h1>
+          <div className="header-sub">Last updated {ts} &nbsp;·&nbsp; {tasks.length} tasks across {phases.length} phases</div>
+        </div>
+        <button className="refresh-btn" onClick={load}>↻ Refresh</button>
+      </div>
+
+      {/* Overall bar */}
+      <div className="overall-bar">
+        <div className="overall-bar-top">
+          <span>Overall Completion</span>
+          <span style={{fontWeight:800,color:'#f1f5f9'}}>{pct}% &nbsp;·&nbsp; {done} / {tasks.length} tasks done</span>
+        </div>
+        <div className="bar-track"><div className="bar-fill" style={{width:pct+'%'}} /></div>
+      </div>
+
+      {/* Stat cards */}
+      <div className="stat-grid">
+        {[
+          { label:'Total Tasks',  value: tasks.length, color:'#818cf8' },
+          { label:'Completed',    value: done,          color: STATUS_COLOR.completed  },
+          { label:'In Progress',  value: inProg,        color: STATUS_COLOR.in_progress },
+          { label:'Pending',      value: pend,          color: STATUS_COLOR.pending    },
+          { label:'Errors',       value: errCt,         color: STATUS_COLOR.error      },
+        ].map(s => (
+          <div key={s.label} className="stat-card">
+            <div className="stat-value" style={{color:s.color}}>{s.value}</div>
+            <div className="stat-label">{s.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Pie + Bar */}
+      <div className="charts-grid">
+        <div className="card">
+          <div className="card-title">Status Distribution</div>
+          <ResponsiveContainer width="100%" height={240}>
+            <PieChart>
+              <Pie data={pieData} cx="50%" cy="50%" innerRadius={62} outerRadius={98} paddingAngle={4} dataKey="value"
+                label={({name,percent}) => percent > 0.06 ? `${(percent*100).toFixed(0)}%` : ''}
+                labelLine={false}
+              >
+                {pieData.map((e,i) => <Cell key={i} fill={e.color} strokeWidth={0} />)}
+              </Pie>
+              <Tooltip {...tooltip} formatter={(v,n) => [v+' tasks', n]} />
+              <Legend formatter={v => <span style={{color:'#94a3b8',fontSize:12}}>{v}</span>} />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="card">
+          <div className="card-title">Tasks per Phase</div>
+          <ResponsiveContainer width="100%" height={240}>
+            <BarChart data={barData} margin={{top:0,right:0,left:-22,bottom:0}}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#1e293b" vertical={false} />
+              <XAxis dataKey="name" stroke="#334155" tick={{fill:'#64748b',fontSize:12}} />
+              <YAxis stroke="#334155" tick={{fill:'#64748b',fontSize:12}} />
+              <Tooltip {...tooltip} />
+              <Legend formatter={v => <span style={{color:'#94a3b8',fontSize:12}}>{v}</span>} />
+              <Bar dataKey="Completed"    stackId="a" fill={STATUS_COLOR.completed}   />
+              <Bar dataKey="In Progress"  stackId="a" fill={STATUS_COLOR.in_progress} />
+              <Bar dataKey="Pending"      stackId="a" fill={STATUS_COLOR.pending}      radius={[4,4,0,0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Radial per-phase */}
+      <div className="card">
+        <div className="card-title">Per-Phase Completion %</div>
+        <ResponsiveContainer width="100%" height={200}>
+          <RadialBarChart cx="50%" cy="50%" innerRadius={22} outerRadius={170} barSize={14} data={radialData} startAngle={180} endAngle={-180}>
+            <RadialBar background={{fill:'#0a0f1e'}} dataKey="value" cornerRadius={7}
+              label={{position:'insideStart',fill:'#fff',fontSize:11,fontWeight:700}} />
+            <Tooltip {...tooltip} formatter={v => [v+'%','Completion']} />
+            <Legend iconSize={10} formatter={(v,e) => <span style={{color:'#94a3b8',fontSize:12}}>{e.payload.name}</span>} />
+          </RadialBarChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Dependency graph */}
+      <div className="card">
+        <div className="card-title">Phase Dependencies</div>
+        <div className="dep-graph">
+          {phases.map((p, i) => {
+            const pt  = tasks.filter(t => t.parent_id === p.id);
+            const st  = phaseStatus(pt);
+            const col = STATUS_COLOR[st] || '#475569';
+            const dn  = pt.filter(t => t.status === 'completed').length;
+            return (
+              <Fragment key={p.id}>
+                {i > 0 && <div className="dep-arrow">→</div>}
+                <div className="dep-box" style={{borderColor:col}}>
+                  <div className="dep-ph">PHASE {p.phase}</div>
+                  <div className="dep-name">{p.title.replace(/Phase \d+ — /,'')}</div>
+                  <div className="dep-badge" style={{background:col+'22',color:col}}>
+                    {dn}/{pt.length} · {st.replace('_',' ')}
+                  </div>
+                </div>
+              </Fragment>
+            );
+          })}
+        </div>
+        {/* Sub-dependency note */}
+        <div style={{marginTop:14,color:'#334155',fontSize:12}}>
+          P1 → P2 → P3 → P5 &nbsp;|&nbsp; P1 → P4 → P5 &nbsp;(P5 requires P3 + P4)
+        </div>
+      </div>
+
+      {/* Phase details accordion */}
+      <div className="card">
+        <div className="card-title">Phase Details</div>
+        {phases.map((p, i) => {
+          const pt       = tasks.filter(t => t.parent_id === p.id);
+          const dn       = pt.filter(t => t.status === 'completed').length;
+          const phasePct = pt.length ? Math.round((dn/pt.length)*100) : 0;
+          const isOpen   = expanded === p.id;
+          const hue      = PHASE_HUE[i % PHASE_HUE.length];
+          return (
+            <div key={p.id} className="phase-row">
+              <div className="phase-header" onClick={() => setExpanded(isOpen ? null : p.id)}>
+                <div className="phase-num" style={{background:hue+'22',border:`2px solid ${hue}`,color:hue}}>{p.phase}</div>
+                <div className="phase-info">
+                  <div className="phase-name">{p.title}</div>
+                  <div className="phase-desc">{p.description}</div>
+                  <div className="mini-bar"><div className="mini-bar-fill" style={{width:phasePct+'%',background:hue}} /></div>
+                </div>
+                <div className="phase-pct">
+                  <div className="phase-pct-num">{phasePct}%</div>
+                  <div className="phase-pct-sub">{dn}/{pt.length} done</div>
+                </div>
+                <div className="chevron">{isOpen ? '▲' : '▼'}</div>
+              </div>
+              {isOpen && (
+                <div className="task-list">
+                  {pt.map(t => (
+                    <div key={t.id} className="task-item">
+                      <div className="task-dot" style={{background:STATUS_COLOR[t.status]||'#475569'}} />
+                      <div className="task-text">
+                        <div className="task-title">{t.title}</div>
+                        <div className="task-desc">{t.description}</div>
+                      </div>
+                      <div className="badge" style={{background:(STATUS_COLOR[t.status]||'#475569')+'22',color:STATUS_COLOR[t.status]||'#475569'}}>
+                        {t.status.replace('_',' ')}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Logs & Errors */}
+      <div className="card">
+        <div className="card-title">Logs & Errors ({logs.length})</div>
+        {logs.length === 0
+          ? <div className="empty-logs">No logs yet — they'll appear here as tasks are implemented.</div>
+          : (
+            <div className="logs-wrap">
+              <table className="logs-table">
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Level</th>
+                    <th>Task</th>
+                    <th>Message</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {logs.map(l => (
+                    <tr key={l.id}>
+                      <td style={{color:'#475569',whiteSpace:'nowrap',fontSize:12}}>
+                        {new Date(l.created_at).toLocaleString()}
+                      </td>
+                      <td>
+                        <span className="badge" style={{
+                          background:(STATUS_COLOR[l.level]||'#475569')+'22',
+                          color:STATUS_COLOR[l.level]||'#475569',
+                          textTransform:'uppercase',
+                          letterSpacing:'.06em'
+                        }}>{l.level}</span>
+                      </td>
+                      <td style={{color:'#94a3b8',fontSize:13}}>{l.task_title || '—'}</td>
+                      <td style={{color:'#e2e8f0'}}>{l.message}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )
+        }
+      </div>
+
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
