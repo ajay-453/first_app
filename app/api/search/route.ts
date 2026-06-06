@@ -17,11 +17,13 @@ export async function POST(req: NextRequest) {
   }
 
   // Call OpenAI
-  const aiRes = await fetch('https://api.openai.com/v1/chat/completions', {
+  const aiRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      'HTTP-Referer': 'https://first-app-eta-gold.vercel.app',
+      'X-Title': '3P Explorer',
     },
     body: JSON.stringify({
       model: 'gpt-4o-mini',
