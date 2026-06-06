@@ -1,103 +1,35 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>First App</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: #fff;
-    }
-
-    .card {
-      background: rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 20px;
-      padding: 50px 60px;
-      text-align: center;
-      max-width: 480px;
-      width: 90%;
-      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.4);
-    }
-
-    .avatar {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #e94560, #0f3460);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
-      margin: 0 auto 24px;
-      box-shadow: 0 8px 20px rgba(233, 69, 96, 0.4);
-    }
-
-    h1 {
-      font-size: 2rem;
-      font-weight: 700;
-      margin-bottom: 8px;
-      background: linear-gradient(135deg, #fff, #a8edea);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .handle {
-      font-size: 1rem;
-      color: #a8edea;
-      margin-bottom: 24px;
-      letter-spacing: 1px;
-    }
-
-    p {
-      font-size: 0.95rem;
-      color: rgba(255,255,255,0.7);
-      line-height: 1.7;
-      margin-bottom: 32px;
-    }
-
-    .btn {
-      display: inline-block;
-      padding: 12px 32px;
-      background: linear-gradient(135deg, #e94560, #c0392b);
-      color: #fff;
-      text-decoration: none;
-      border-radius: 50px;
-      font-weight: 600;
-      font-size: 0.95rem;
-      transition: transform 0.2s, box-shadow 0.2s;
-      box-shadow: 0 6px 20px rgba(233, 69, 96, 0.4);
-    }
-
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 28px rgba(233, 69, 96, 0.6);
-    }
-
-    .footer {
-      margin-top: 32px;
-      font-size: 0.8rem;
-      color: rgba(255,255,255,0.35);
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Modern Landing Page</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Arial,sans-serif;background:#f5f7fa;color:#333;line-height:1.6}
+header{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:white;text-align:center;padding:80px 20px}
+header h1{font-size:3rem;margin-bottom:15px}
+header p{font-size:1.2rem}
+.btn{display:inline-block;margin-top:25px;padding:12px 24px;background:white;color:#4f46e5;text-decoration:none;border-radius:8px;font-weight:bold}
+.container{max-width:1100px;margin:auto;padding:50px 20px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px}
+.card{background:white;padding:25px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.08)}
+footer{text-align:center;padding:25px;background:#111827;color:white;margin-top:40px}
+</style>
 </head>
 <body>
-  <div class="card">
-    <div class="avatar">A</div>
-    <h1>First App</h1>
-    <p class="handle">@ajay-453</p>
-    <p>Welcome to my first web application, built and deployed with Git, GitHub, and Vercel.</p>
-    <a class="btn" href="https://github.com/ajay-453/first_app" target="_blank">View on GitHub</a>
-    <div class="footer">ajaycse777@gmail.com</div>
-  </div>
+<header>
+<h1>Welcome to My Website</h1>
+<p>A fully self-contained HTML + CSS webpage.</p>
+<a href="#" class="btn">Get Started</a>
+</header>
+<section class="container">
+<div class="cards">
+<div class="card"><h3>Fast</h3><p>Lightweight design with no external dependencies.</p></div>
+<div class="card"><h3>Responsive</h3><p>Works on desktop, tablet, and mobile devices.</p></div>
+<div class="card"><h3>Modern</h3><p>Clean layout with a contemporary visual style.</p></div>
+</div>
+</section>
+<footer>&copy; 2026 My Website. All rights reserved.</footer>
 </body>
 </html>
