@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 
 interface Result {
@@ -17,8 +17,7 @@ export default function Home() {
   const [error, setError] = useState('');
   const [slug, setSlug] = useState('');
 
-  const search = async () => {
-    const t = topic.trim();
+  const doSearch = async (t: string) => {
     if (!t) return;
     setLoading(true);
     setError('');
@@ -39,6 +38,18 @@ export default function Home() {
       setLoading(false);
     }
   };
+
+  const search = () => doSearch(topic.trim());
+
+  // Auto-search when redirected from history with ?q= param
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get('q');
+    if (q) {
+      setTopic(q);
+      doSearch(q);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const RANK_COLORS = ['from-indigo-500 to-violet-500', 'from-violet-500 to-purple-500', 'from-purple-500 to-fuchsia-500'];
 

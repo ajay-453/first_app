@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getClient } from '@/lib/db';
+import { auth } from '@/auth';
 
 function slugify(topic: string): string {
   return topic
@@ -16,7 +17,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'topic is required' }, { status: 400 });
   }
 
-  // Call OpenAI
+  // Call OpenRouter
   const aiRes = await fetch('https://openrouter.ai/api/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -57,6 +58,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to parse AI response', raw }, { status: 500 });
   }
 
+  // Get logged-in user (if any)
+  const session = await auth();
+  const userId: string | null = session?.user?.id ?? null;
+
   // Persist to NeonDB
   const slug = slugify(topic.trim());
   const client = getClient();
@@ -64,11 +69,14 @@ export async function POST(req: NextRequest) {
     await client.connect();
 
     const { rows } = await client.query<{ id: string }>(
-      `INSERT INTO searches (topic, slug)
-       VALUES ($1, $2)
-       ON CONFLICT (slug) DO UPDATE SET topic = EXCLUDED.topic, created_at = NOW()
+      `INSERT INTO searches (topic, slug, user_id)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (slug) DO UPDATE
+         SET topic = EXCLUDED.topic,
+             user_id = COALESCE(EXCLUDED.user_id, searches.user_id),
+             created_at = NOW()
        RETURNING id`,
-      [topic.trim(), slug]
+      [topic.trim(), slug, userId]
     );
     const searchId = rows[0].id;
 
@@ -80,20 +88,21 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Record in user history if logged in
+    if (userId) {
+      await client.query(
+        `INSERT INTO user_search_history (user_id, search_id, topic) VALUES ($1, $2, $3)`,
+        [userId, searchId, topic.trim()]
+      );
+    }
+
     // Update version1 — mark "Store searches in DB" completed after first successful save
     await client.query(
       `UPDATE version1 SET status='completed', completed_at=NOW(), updated_at=NOW()
        WHERE title='Store searches in DB' AND status != 'completed'`
     );
-    await client.query(
-      `INSERT INTO version1_logs(task_id, level, message)
-       SELECT id, 'info', 'First search saved to DB — topic: ${topic.trim().substring(0, 40)}'
-       FROM version1 WHERE title='Store searches in DB'
-       ON CONFLICT DO NOTHING`
-    );
   } catch (e) {
     console.error('DB write error:', e);
-    // Don't fail the user-facing request for a DB error
   } finally {
     await client.end().catch(() => {});
   }

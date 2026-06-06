@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import './globals.css';
+import Nav from '@/components/Nav';
 
 export const metadata: Metadata = {
   title: '3P Explorer',
@@ -9,7 +10,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="bg-slate-950 text-white antialiased">{children}</body>
+      <body className="bg-slate-950 text-white antialiased">
+        <Nav />
+        {children}
+      </body>
     </html>
   );
 }
