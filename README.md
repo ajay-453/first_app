@@ -229,3 +229,26 @@ The app is deployed on **Vercel** via GitHub integration. Push to `master` → V
 # Manual deploy (if needed)
 vercel --prod
 ```
+
+---
+
+## AI-Assisted Development Setup
+
+This repo is wired for Claude Code with a small, opinionated tooling layer. Full reference: [`docs/CLAUDE_SETUP.md`](docs/CLAUDE_SETUP.md).
+
+- **`CLAUDE.md`** — always-on behavior rules (the 4 Karpathy coding principles).
+- **`AGENTS.md` tree** — per-folder "contracts" (root + `app/`, `app/api/`, `lib/`, `components/`), following the [DOX](https://github.com/agent0ai/dox) convention. Read root → file's folder before editing; nearest doc wins.
+- **Skills** (`.claude/skills/`) — `karpathy-guidelines` and `grill-me` (`/grill-me [target]` for a hard design review).
+- **Hook** (`.claude/hooks/inject-agents-md.sh` + `.claude/settings.json`) — a `PreToolUse` hook that auto-injects the relevant `AGENTS.md` before any edit, so local contracts are always in context.
+
+Steps to use:
+
+```bash
+# 1. Nothing to install — it's plain Markdown + a shell hook. Just open the repo in Claude Code.
+# 2. (Optional) make it global for ALL your projects:
+cp -r .claude/skills/* ~/.claude/skills/ && cp .claude/hooks/inject-agents-md.sh ~/.claude/hooks/
+#    then merge the PreToolUse hook into ~/.claude/settings.json (see docs/CLAUDE_SETUP.md).
+# 3. Hooks load at session start — open a NEW session (or /hooks) to activate.
+```
+
+> ⚠️ The setup has known limitations (session-dedup vs. context eviction, silent failure, etc.) documented in [`docs/CLAUDE_SETUP.md`](docs/CLAUDE_SETUP.md#known-limitations). It guarantees the contracts are *seen*, not *obeyed*.
