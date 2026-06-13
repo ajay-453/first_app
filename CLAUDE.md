@@ -13,6 +13,7 @@ Behavioral guidelines for working in this repo. Based on [multica-ai/andrej-karp
 - **Stack:** Next.js 15 (App Router) · TypeScript · Tailwind CSS · NextAuth.js v5 · NeonDB (Postgres) · OpenRouter (`gpt-4o-mini`) · Vercel
 - **Key paths:** `app/page.tsx` (search UI) · `app/api/search/route.ts` (LLM + persistence) · `auth.ts` / `auth.config.ts` · `lib/db.ts` · `app/history/page.tsx`
 - **Build phases & status:** see `README.md` → Development Roadmap
+- **Per-area context:** this repo uses a DOX-style `AGENTS.md` tree. Before editing, read the root `AGENTS.md` and walk down to the folder you're touching (`app/`, `app/api/`, `lib/`, `components/`); update those docs after meaningful changes.
 - Secrets live in Vercel env / `.env.local` — never commit them.
 
 ---
