@@ -22,6 +22,63 @@ An AI-powered "Top 3" ranker — enter any topic and get the definitive top thre
 
 ---
 
+## Development Roadmap
+
+The app is built in 5 phases. Status legend: ✅ done · 🚧 in progress · ⛔ blocked · ⬜ pending.
+
+| Phase | Title | Status | Done |
+|---|---|---|---|
+| 1 | Foundation + LLM Core | ✅ Complete | 5/5 |
+| 2 | Auth + History | 🚧 In progress | 3/4 |
+| 3 | Shareable + Trending + Voting | ⬜ Pending | 0/4 |
+| 4 | Differentiation | ⬜ Pending | 0/4 |
+| 5 | Growth + Monetization | ⬜ Pending | 0/4 |
+
+**Overall: 8 / 21 tasks complete**
+
+### Phase 1 — Foundation + LLM Core ✅
+> Goal: replace hardcoded data with real LLM answers.
+
+- ✅ Migrate to Next.js (15, App Router, TypeScript, Tailwind)
+- ✅ Set up NeonDB schema (`searches`, `results` tables)
+- ✅ Wire LLM API via env var (OpenRouter, `OPENAI_API_KEY`)
+- ✅ Store every search + result in the DB
+- ✅ Clean search UI with loading / error / empty states
+
+### Phase 2 — Auth + History 🚧
+> Goal: give users an identity and memory.
+
+- ⛔ Google / GitHub login via NextAuth.js — *code complete; blocked on OAuth app credentials being added to Vercel*
+- ✅ Link searches to the logged-in user (`user_id`, `user_search_history`)
+- ✅ `/history` page — auth-gated, shows last 50 searches
+- ✅ Re-run any past search (`/?q=` param auto-searches on load)
+
+### Phase 3 — Shareable + Trending + Voting ⬜
+> Goal: make it social and viral.
+
+- ⬜ Auto-generate slug per search (`/t/ucl-players`) *(slug generation already wired; public page pending)*
+- ⬜ Public shareable page per topic (SSR, works without login)
+- ⬜ Up / downvote each result (`votes` table)
+- ⬜ `/trending` page
+
+### Phase 4 — Differentiation ⬜
+> Goal: why this over ChatGPT.
+
+- ⬜ Source citations (LLM returns a URL for each pick) *(partially scaffolded in the search prompt)*
+- ⬜ Confidence score (how contested is the topic)
+- ⬜ Recency toggle (all-time vs today — Tavily/Bing)
+- ⬜ Compare mode (two topics side by side)
+
+### Phase 5 — Growth + Monetization ⬜
+> Goal: make it a business.
+
+- ⬜ Embeddable widget (iframe)
+- ⬜ Public REST API (`GET /api/v1/top3?topic=...`)
+- ⬜ API credits model (Stripe)
+- ⬜ Collections (curate and share named sets)
+
+---
+
 ## Development Steps
 
 ### Step 0 — Repo bootstrap
